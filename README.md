@@ -1,5 +1,5 @@
 # Jiagu自然语言处理工具
->>> Jiagu以BiLSTM等模型为基础，使用大规模语料训练而成。将提供中文分词、词性标注、命名实体识别、情感分析、知识图谱关系抽取、关键词抽取、文本摘要、新词发现等常用自然语言处理功能。参考了各大工具优缺点制作，将Jiagu回馈给大家。
+>>> Jiagu以BiLSTM等模型为基础，使用大规模语料训练而成。将提供中文分词、词性标注、命名实体识别、情感分析、知识图谱关系抽取、关键词抽取、文本摘要、新词发现、情感分析、文本聚类等常用自然语言处理功能。参考了各大工具优缺点制作，将Jiagu回馈给大家。
 
 ## 目录
 * [安装方式](#安装方式)
@@ -13,20 +13,23 @@
 * 中文分词
 * 词性标注
 * 命名实体识别
-* 情感分析     (模型训练中)
 * 知识图谱关系抽取
 * 关键词提取
 * 文本摘要
 * 新词发现
+* 情感分析
+* 文本聚类
 * 等等。。。。
 
 ---
 
-### 安装方式
+## 安装方式
 pip安装
 ```shell
-pip install jiagu
+pip install -U jiagu
 ```
+如果比较慢，可以使用清华的pip源：`pip install -U jiagu -i https://pypi.tuna.tsinghua.edu.cn/simple`
+
 源码安装
 ```shell
 git clone https://github.com/ownthink/Jiagu
@@ -34,7 +37,7 @@ cd Jiagu
 python3 setup.py install
 ```
 
-### 使用方式
+## 使用方式
 1. 快速上手：分词、词性标注、命名实体识别
 ```python3
 import jiagu
@@ -49,49 +52,36 @@ print(words)
 pos = jiagu.pos(words) # 词性标注
 print(pos)
 
-ner = jiagu.ner(text) # 命名实体识别
+ner = jiagu.ner(words) # 命名实体识别
 print(ner)
 ```
 
 2. 中文分词
-
-分词各种模式使用方式
 ```python3
 import jiagu
 
-text = '汉服和服装'
+text = '汉服和服装、维基图谱'
 
-words = jiagu.seg(text) # 默认分词
+words = jiagu.seg(text)
 print(words)
 
-words = jiagu.seg([text, text, text], input='batch') # 批量分词，加快速度。
-print(words)
+# jiagu.load_userdict('dict/user.dict') # 加载自定义字典，支持字典路径、字典列表形式。
+jiagu.load_userdict(['汉服和服装'])
 
-words = jiagu.seg(text, model='mmseg') # 使用mmseg算法进行分词
-print(list(words))
-```
-
-自定义分词模型（将单独提供msr、pku、cnc等分词标准）
-```python3
-import jiagu
-
-# 独立标准模型路径
-# msr：test/extra_data/model/msr.model
-# pku：test/extra_data/model/pku.model
-# cnc：test/extra_data/model/cnc.model
-
-jiagu.load_model('test/extra_data/model/cnc.model') # 使用国家语委分词标准
-
-words = jiagu.seg('结婚的和尚未结婚的')
-
+words = jiagu.seg(text) # 自定义分词，字典分词模式有效
 print(words)
 ```
 
 3. 知识图谱关系抽取
+
+仅用于测试用，可以pip3 install jiagu==0.1.8，只能使用百科的描述进行测试。效果更佳的后期将会开放api。
 ```python3
 import jiagu
 
-text = '姚明（Yao Ming），1980年9月12日出生于上海市徐汇区，祖籍江苏省苏州市吴江区震泽镇，前中国职业篮球运动员，司职中锋，现任中职联公司董事长兼总经理。'
+# 吻别是由张学友演唱的一首歌曲。
+# 《盗墓笔记》是2014年欢瑞世纪影视传媒股份有限公司出品的一部网络季播剧，改编自南派三叔所著的同名小说，由郑保瑞和罗永昌联合导演，李易峰、杨洋、唐嫣、刘天佐、张智尧、魏巍等主演。
+
+text = '姚明1980年9月12日出生于上海市徐汇区，祖籍江苏省苏州市吴江区震泽镇，前中国职业篮球运动员，司职中锋，现任中职联公司董事长兼总经理。'
 knowledge = jiagu.knowledge(text)
 print(knowledge)
 ```
@@ -114,6 +104,8 @@ print(keywords)
 
 5. 文本摘要
 ```python3
+import jiagu
+
 fin = open('input.txt', 'r')
 text = fin.read()
 fin.close()
@@ -129,8 +121,35 @@ import jiagu
 jiagu.findword('input.txt', 'output.txt') # 根据文本，利用信息熵做新词发现。
 ```
 
-### 评价标准
-1. msr测试结果
+7. 情感分析
+```python3
+import jiagu
+
+text = '很讨厌还是个懒鬼'
+sentiment = jiagu.sentiment(text)
+print(sentiment)
+```
+
+8. 文本聚类
+```python3
+import jiagu
+
+docs = [
+        "百度深度学习中文情感分析工具Senta试用及在线测试",
+        "情感分析是自然语言处理里面一个热门话题",
+        "AI Challenger 2018 文本挖掘类竞赛相关解决方案及代码汇总",
+        "深度学习实践：从零开始做电影评论文本情感分析",
+        "BERT相关论文、文章和代码资源汇总",
+        "将不同长度的句子用BERT预训练模型编码，映射到一个固定长度的向量上",
+        "自然语言处理工具包spaCy介绍",
+        "现在可以快速测试一下spaCy的相关功能，我们以英文数据为例，spaCy目前主要支持英文和德文"
+    ]
+cluster = jiagu.text_cluster(docs)	
+print(cluster)
+```
+
+## 评价标准
+1. msr测试结果（旧版本）
 
 ![msr](https://github.com/ownthink/evaluation/blob/master/images/2.png)
 
@@ -182,7 +201,7 @@ B-LOC、I-LOC   地名
 B-ORG、I-ORG   机构名
 ```
 
-### 加入我们
+## 加入我们
 思知人工智能群QQ群：90780053，微信群联系作者微信：MrYener，作者邮箱联系方式：help@ownthink.com
 
 <p>捐赠作者(您的鼓励是作者开源最大的动力！！！)：<a href="https://github.com/ownthink/Jiagu/wiki/donation"target="_blank">捐赠致谢</a> </p>
@@ -190,10 +209,11 @@ B-ORG、I-ORG   机构名
 ![收款码](https://github.com/ownthink/KnowledgeGraph/raw/master/img/%E6%94%B6%E6%AC%BE%E7%A0%81.jpg)
 
 
-### 贡献者：
+## 贡献者：
 1. [Yener](https://github.com/ownthink)
 2. [zengbin93](https://github.com/zengbin93)
 3. [dirtdust](https://github.com/dirtdust)
 4. [frankchen7788](https://github.com/frankchen7788)
+
 
 

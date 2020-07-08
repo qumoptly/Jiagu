@@ -1,15 +1,5 @@
 # -*- encoding:utf-8 -*-
-"""
- * Copyright (C) 2017 OwnThink.
- *
- * Name        : textrank.py - 解析
- * Author      : zengbin93 <zeng_bin8888@163.com>
- * Version     : 0.01
- * Description : TextRank算法实现
- special thanks to https://github.com/ArtistScript/FastTextRank
-"""
 import sys
-import numpy as np
 from jiagu import utils
 from heapq import nlargest
 from collections import defaultdict
@@ -35,7 +25,6 @@ class Keywords(object):
             with open(self.__stop_words_file, 'r', encoding='utf-8') as f:
                 for word in f:
                     self.__stop_words.add(word.strip())
-        np.seterr(all='warn')
 
     @staticmethod
     def build_vocab(sents):
@@ -78,11 +67,8 @@ class Keywords(object):
                                        tol=self.__tol)
         sent_selected = nlargest(n, zip(scores, count()))
         sent_index = []
-        for i in range(n):
-            try:
-                sent_index.append(sent_selected[i][1])
-            except:
-                pass
+        for i in range(min(len(sent_selected), n)):
+            sent_index.append(sent_selected[i][1])
         return [index_word[i] for i in sent_index]
 
 
@@ -104,9 +90,9 @@ class Summarize(object):
         if stop_words_file:
             self.__stop_words_file = stop_words_file
         if use_stopword:
-            for word in open(self.__stop_words_file, 'r', encoding='utf-8'):
-                self.__stop_words.add(word.strip())
-        np.seterr(all='warn')
+            with open(self.__stop_words_file, 'r', encoding='utf-8') as f:
+                for word in f:
+                    self.__stop_words.add(word.strip())
 
     def filter_dictword(self, sents):
         _sents = []
@@ -130,7 +116,7 @@ class Summarize(object):
         scores = utils.weight_map_rank(graph, self.__max_iter, self.__tol)
         sent_selected = nlargest(n, zip(scores, count()))
         sent_index = []
-        for i in range(n):
+        for i in range(min(n, len(sent_selected))):
             sent_index.append(sent_selected[i][1])
         return [sentences[i] for i in sent_index]
 
